@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Evaluador de Proyectos Inmobiliarios 2026</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #27ae60;
+            --accent: #e67e22;
+            --bg: #f4f7f6;
+        }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); padding: 20px; color: #333; }
+        .container { max-width: 1000px; margin: auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        h1, h2 { color: var(--primary); border-bottom: 2px solid var(--secondary); padding-bottom: 10px; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .section { background: #fff; padding: 15px; border: 1px solid #ddd; border-radius: 8px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 0.9em; }
+        input, select { width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        .result-box { background: var(--primary); color: white; padding: 20px; border-radius: 8px; margin-top: 20px; }
+        .badge { display: inline-block; padding: 10px 20px; border-radius: 50px; font-weight: bold; font-size: 1.2em; margin-top: 10px; }
+        .score-10 { background: #27ae60; }
+        .score-low { background: #c0392b; }
+        .warning { color: #e67e22; font-size: 0.8em; font-style: italic; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Evaluación de Proyecto Inmobiliario</h1>
+
+    <div class="grid">
+        <div class="section">
+            <h2>Datos Base</h2>
+            <label>Precio de Venta Total del Proyecto ($)</label>
+            <input type="number" id="precioVentaTotal" value="1000000000" oninput="calcular()">
+            
+            <label>Número de Unidades</label>
+            <input type="number" id="numUnidades" value="10" oninput="calcular()">
+            
+            <label>Valor UVT (2026: $52.374)</label>
+            <input type="number" id="valorUVT" value="52374" oninput="calcular()">
+
+            <label>Escrituración por unidad ($)</label>
+            <input type="number" id="escrituracionUnidad" value="2000000" oninput="calcular()">
+        </div>
+
+        <div class="section">
+            <h2>Evaluación de Terreno</h2>
+            <label>Precio del Terreno ($)</label>
+            <input type="number" id="costoTerreno" value="130000000" oninput="calcular()">
+            
+            <label>Precio Terreno Similar en la Zona ($)</label>
+            <input type="number" id="costoTerrenoSimilar" value="150000000" oninput="calcular()">
+            
+            <div id="diffTerreno" style="font-size: 0.9em; margin-bottom: 10px;"></div>
+
+            <label>Ubicación</label>
+            <select id="ubicacion" onchange="calcular()">
+                <option value="N">Norte (N)</option>
+                <option value="C">Centro (C)</option>
+                <option value="S">Sur (S)</option>
+            </select>
+
+            <label>¿Requiere Preparación Especial? (Mov. Tierras)</label>
+            <select id="preparacion" onchange="calcular()">
+                <option value="-">Sí (Agrega -)</option>
+                <option value="+">No (Agrega +)</option>
+            </select>
+            
+            <div class="result-box" style="padding:10px; background:#16a085;">
+                Calificación Terreno: <span id="califLetras" style="font-weight:bold; font-size:1.5em;">---</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid" style="margin-top:20px;">
+        <div class="section">
+            <h2>Costos Directos e Indirectos</h2>
+            <p class="warning">* Los topes se calculan automáticamente para la validación.</p>
+            
+            <label>Carreteras y Cesión (Máx 15% costo total)</label>
+            <input type="number" id="costoCarreteras" value="50000000" oninput="calcular()">
+
+            <label>Construcción y Amenidades (Máx 30% costo total)</label>
+            <input type="number" id="costoConstruccion" value="250000000" oninput="calcular()">
+
+            <label>Publicidad (Máx 3% costo total)</label>
+            <input type="number" id="costoPublicidad" value="15000000" oninput="calcular()">
+        </div>
+
+        <div class="section" id="resultados">
+            <h2>Visualizador de Resultados</h2>
+            <p>Costo del Proyecto: <b id="resCostoTotal">$0</b></p>
+            <p>Costo por Unidad: <b id="resCostoUnidad">$0</b></p>
+            <p>Ganancia antes de Impuestos: <b id="resGanancia">$0</b></p>
+            <p>Margen de Utilidad: <b id="resMargen">0%</b></p>
+            
+            <div id="puntuacionFinal" class="badge">Nota: 0 / 10</div>
+        </div>
+    </div>
+</div>
+
+<script>
+function calcular() {
+    // 1. Obtención de valores básicos
+    const ventaTotal = parseFloat(document.getElementById('precioVentaTotal').value) || 0;
+    const unidades = parseFloat(document.getElementById('numUnidades').value) || 1;
+    const uvt = parseFloat(document.getElementById('valorUVT').value) || 0;
+    const terreno = parseFloat(document.getElementById('costoTerreno').value) || 0;
+    const terrenoSimilar = parseFloat(document.getElementById('costoTerrenoSimilar').value) || 0;
+    const escrituracionUnidad = parseFloat(document.getElementById('escrituracionUnidad').value) || 0;
+
+    // 2. Costos Directos e Indirectos fijos por fórmula
+    const costoOperativo = ventaTotal * 0.002; // 0.2%
+    const costoNotarial = 262.5 * uvt;
+    const costoEscrituracionTotal = (escrituracionUnidad / 2) * unidades;
+    const comisionesVenta = ventaTotal * 0.03;
+
+    // Costos variables ingresados
+    const carreteras = parseFloat(document.getElementById('costoCarreteras').value) || 0;
+    const construccion = parseFloat(document.getElementById('costoConstruccion').value) || 0;
+    const publicidad = parseFloat(document.getElementById('costoPublicidad').value) || 0;
+
+    // Suma temporal para calcular ganancia desarrollador (sobre costos directos)
+    // Costos Directos = Terreno + Carreteras + Construcción + Operativos + Notarial + Escrituración
+    const totalDirectos = terreno + carreteras + construccion + costoOperativo + costoNotarial + costoEscrituracionTotal;
+    const gananciaDesarrollador = totalDirectos * 0.105; // Promedio entre 9% y 12% para el cálculo
+
+    const costoProyecto = totalDirectos + publicidad + comisionesVenta + gananciaDesarrollador;
+
+    // 3. Cálculos de Terreno (Diferencia)
+    const diffPrecio = terrenoSimilar - terreno;
+    const diffPorcentaje = (terrenoSimilar !== 0) ? (diffPrecio / terrenoSimilar) * 100 : 0;
+    document.getElementById('diffTerreno').innerHTML = `Dif. con zona: $${diffPrecio.toLocaleString()} (${diffPorcentaje.toFixed(1)}%)`;
+
+    // 4. Calificación de Viabilidad Terreno
+    let viabilidad = "";
+    const pctTerrenoSobreCosto = (terreno / costoProyecto) * 100;
+    
+    if (pctTerrenoSobreCosto < 12) viabilidad = "AAA";
+    else if (pctTerrenoSobreCosto >= 12 && pctTerrenoSobreCosto < 15) viabilidad = "AA";
+    else if (pctTerrenoSobreCosto === 15) viabilidad = "A";
+    else viabilidad = "B";
+
+    const califFinalTerreno = document.getElementById('ubicacion').value + viabilidad + document.getElementById('preparacion').value;
+    document.getElementById('califLetras').innerText = califFinalTerreno;
+
+    // 5. Ganancias y Calificación Final del Proyecto
+    const gananciaAntesImp = ventaTotal - costoProyecto;
+    const margenPct = (gananciaAntesImp / ventaTotal) * 100;
+
+    let nota = 1;
+    if (margenPct >= 50) nota = 10;
+    else if (margenPct >= 40) nota = 9;
+    else if (margenPct >= 35) nota = 8;
+    else if (margenPct >= 30) nota = 7;
+    else if (margenPct >= 25) nota = 6;
+    else if (margenPct >= 20) nota = 5;
+    else if (margenPct >= 15) nota = 4;
+    else if (margenPct >= 10) nota = 3;
+    else if (margenPct >= 5) nota = 2;
+    else nota = 1;
+
+    // 6. Mostrar Resultados
+    document.getElementById('resCostoTotal').innerText = `$ ${costoProyecto.toLocaleString()}`;
+    document.getElementById('resCostoUnidad').innerText = `$ ${(costoProyecto / unidades).toLocaleString()}`;
+    document.getElementById('resGanancia').innerText = `$ ${gananciaAntesImp.toLocaleString()}`;
+    document.getElementById('resMargen').innerText = `${margenPct.toFixed(2)}%`;
+    
+    const divNota = document.getElementById('puntuacionFinal');
+    divNota.innerText = `Calificación Proyecto: ${nota} / 10`;
+    divNota.className = "badge " + (nota >= 7 ? "score-10" : "score-low");
+}
+
+// Ejecutar al cargar
+calcular();
+</script>
+
+</body>
+</html>
