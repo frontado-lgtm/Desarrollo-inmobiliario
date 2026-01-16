@@ -3,179 +3,142 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Evaluador Inmobiliario Pro 2026</title>
+    <title>Evaluador Inmobiliario - Versión Final</title>
     <style>
         :root {
-            --primary: #1a2a6c;
-            --secondary: #b21f1f;
-            --accent: #fdbb2d;
-            --light: #f8f9fa;
-            --dark: #2d3436;
+            --primary: #1e3799;
+            --secondary: #eb2f06;
+            --success: #38ada9;
+            --dark: #2f3542;
+            --light: #f1f2f6;
         }
-        body { font-family: 'Segoe UI', Roboto, sans-serif; background: #eef2f3; margin: 0; padding: 20px; color: var(--dark); }
-        .container { max-width: 1200px; margin: auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        body { font-family: 'Segoe UI', sans-serif; background: #dfe4ea; margin: 0; padding: 20px; color: var(--dark); }
+        .container { max-width: 1100px; margin: auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
         
-        h1, h2 { text-align: center; color: var(--primary); text-transform: uppercase; letter-spacing: 1px; }
-        h3 { border-bottom: 2px solid var(--primary); padding-bottom: 5px; margin-top: 0; }
-
-        /* Layout Grid */
-        .main-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 30px; }
-        .section { background: var(--light); padding: 20px; border-radius: 10px; border: 1px solid #ddd; }
+        h1, h2, h3 { text-align: center; color: var(--primary); margin-top: 0; }
+        .grid-main { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; margin-bottom: 25px; }
         
-        .visualizador-central { grid-column: 1 / span 2; background: var(--primary); color: white; padding: 25px; border-radius: 10px; text-align: center; }
+        .card { background: var(--light); padding: 20px; border-radius: 10px; border: 1px solid #ced4da; }
+        .input-group { margin-bottom: 12px; }
+        label { display: block; font-weight: bold; font-size: 0.85em; margin-bottom: 4px; color: #57606f; }
+        input, select { width: 100%; padding: 10px; border: 1px solid #a4b0be; border-radius: 6px; box-sizing: border-box; font-size: 0.95em; }
         
-        /* Form Elements */
-        .input-group { margin-bottom: 15px; }
-        label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 0.85em; }
-        input, select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; font-size: 1em; }
-        input:read-only { background: #e9ecef; cursor: not-allowed; }
+        /* Visualizadores */
+        .visor-unidad { background: #ffffff; border: 2px solid var(--primary); padding: 15px; border-radius: 10px; margin-bottom: 20px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; text-align: center; }
+        .visor-unidad div { border-right: 1px solid #eee; }
+        .visor-unidad div:last-child { border-right: none; }
+        .val-unidad { display: block; font-size: 1.1em; font-weight: bold; color: var(--primary); }
 
-        /* Evaluation Style */
-        .terreno-section { margin-top: 40px; border-top: 3px dashed #ccc; padding-top: 30px; }
-        .res-destacado { font-size: 1.5em; font-weight: bold; color: var(--accent); }
-        .badge { display: inline-block; padding: 10px 25px; border-radius: 50px; font-size: 1.2em; font-weight: bold; margin-top: 10px; }
-        .nota-alta { background: #27ae60; color: white; }
-        .nota-baja { background: #c0392b; color: white; }
+        .visualizador-total { background: var(--primary); color: white; padding: 25px; border-radius: 10px; text-align: center; }
+        .res-big { font-size: 1.8em; font-weight: bold; color: #fff; margin: 5px 0; }
+        
+        .badge { display: inline-block; padding: 12px 30px; border-radius: 50px; font-size: 1.3em; font-weight: bold; margin-top: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+        .nota-ok { background: var(--success); }
+        .nota-alert { background: var(--secondary); }
 
-        .flex-row { display: flex; gap: 15px; align-items: center; }
-        .flex-row div { flex: 1; }
+        .terreno-box { margin-top: 30px; padding: 20px; border: 2px dashed var(--primary); border-radius: 10px; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>Sistema de Evaluación Inmobiliaria 2026</h1>
+    <h1>Evaluación de Proyecto Inmobiliario</h1>
 
-    <div class="main-grid">
-        <div class="section">
+    <div class="grid-main">
+        <div class="card">
             <h3>Gastos Directos</h3>
+            <div class="input-group"><label>Costo del Terreno ($)</label><input type="number" id="cTerreno" value="200000000" oninput="calcular()"></div>
+            <div class="input-group"><label>Carreteras y Cesión ($)</label><input type="number" id="cCarreteras" value="80000000" oninput="calcular()"></div>
+            <div class="input-group"><label>Construcción y Amenidades ($)</label><input type="number" id="cConst" value="450000000" oninput="calcular()"></div>
+            <div class="input-group"><label>Costos Operativos ($)</label><input type="number" id="cOp" value="5000000" oninput="calcular()"></div>
             <div class="input-group">
-                <label>1. Costo del Terreno ($)</label>
-                <input type="number" id="costoTerreno" value="150000000" oninput="calcular()">
+                <label>Valor UVT (Manual)</label>
+                <input type="number" id="vUVT" value="52374" oninput="calcular()">
+                <small>Notaría: 262.5 UVT = <span id="valNotariaTxt">$0</span></small>
             </div>
             <div class="input-group">
-                <label>2. Carreteras y Zonas de Cesión ($)</label>
-                <input type="number" id="costoCarreteras" value="50000000" oninput="calcular()">
-            </div>
-            <div class="input-group">
-                <label>3. Construcción, Preparación y Amenidades ($)</label>
-                <input type="number" id="costoConstruccion" value="300000000" oninput="calcular()">
-            </div>
-            <div class="input-group">
-                <label>4. Costos Operativos (Nómina, Oficinas) ($)</label>
-                <input type="number" id="costoOperativo" value="2000000" oninput="calcular()">
-            </div>
-            <div class="input-group">
-                <div class="flex-row">
-                    <div>
-                        <label>5. Valor UVT ($)</label>
-                        <input type="number" id="valorUVT" value="52374" oninput="calcular()">
-                    </div>
-                    <div>
-                        <label>Notaría (262.5 UVT)</label>
-                        <input type="text" id="costoNotarial" readonly>
-                    </div>
-                </div>
-            </div>
-            <div class="input-group">
-                <div class="flex-row">
-                    <div>
-                        <label>6. Escrituración x Unidad ($)</label>
-                        <input type="number" id="escrituracionUnidad" value="1500000" oninput="calcular()">
-                    </div>
-                    <div>
-                        <label>Unidades Totales</label>
-                        <input type="number" id="numUnidades" value="10" oninput="calcular()">
-                    </div>
-                </div>
+                <label>Escrituración por Unidad ($)</label>
+                <input type="number" id="cEscUni" value="2500000" oninput="calcular()">
+                <small>Dividido entre 2 y multiplicado por unidades.</small>
             </div>
         </div>
 
-        <div class="section">
-            <h3>Gastos Indirectos (Auto)</h3>
+        <div class="card">
+            <h3>Gastos Indirectos</h3>
             <div class="input-group">
-                <label>Precio de Venta Sugerido Proyecto ($)</label>
-                <input type="number" id="precioVentaTotal" value="1200000000" oninput="calcular()">
-            </div>
-            <div class="input-group">
-                <label>Publicidad (3% Costo Proyecto)</label>
-                <input type="text" id="autoPublicidad" readonly>
+                <label>Venta Total del Proyecto ($)</label>
+                <input type="number" id="vTotal" value="1500000000" oninput="calcular()">
             </div>
             <div class="input-group">
-                <label>Comisiones de Venta (3% Precio Venta)</label>
-                <input type="text" id="autoComisiones" readonly>
+                <label>Número de Unidades</label>
+                <input type="number" id="nUni" value="12" oninput="calcular()">
             </div>
             <div class="input-group">
-                <label>Colchón de Seguridad (5% Precio Venta)</label>
-                <input type="text" id="autoColchon" readonly>
-                <small>Rango: 3% - 10%. Ajustado al 5% para este cálculo.</small>
+                <label>% Publicidad (Sugerido 3%)</label>
+                <select id="pPub" onchange="calcular()">
+                    <option value="0.01">1%</option><option value="0.02">2%</option><option value="0.03" selected>3%</option><option value="0.04">4%</option>
+                </select>
             </div>
             <div class="input-group">
-                <label>Ganancia Desarrollador (10.5% Costos Directos)</label>
-                <input type="text" id="autoGananciaDes" readonly>
-                <small>Rango: 9% - 12%.</small>
+                <label>% Comisiones de Venta</label>
+                <select id="pCom" onchange="calcular()">
+                    <option value="0.02">2%</option><option value="0.03" selected>3%</option><option value="0.04">4%</option><option value="0.05">5%</option>
+                </select>
             </div>
-        </div>
-
-        <div class="visualizador-central">
-            <h3>Visualizador de Costos y Ganancia</h3>
-            <div class="main-grid" style="grid-template-columns: repeat(3, 1fr); background: none; border: none;">
-                <div>
-                    <p>COSTO TOTAL PROYECTO</p>
-                    <div id="resCostoTotal" class="res-destacado">$ 0</div>
-                </div>
-                <div>
-                    <p>COSTO POR UNIDAD</p>
-                    <div id="resCostoUnidad" class="res-destacado">$ 0</div>
-                </div>
-                <div>
-                    <p>GANANCIA ANTES IMP.</p>
-                    <div id="resGananciaAbs" class="res-destacado">$ 0</div>
-                </div>
+            <div class="input-group">
+                <label>% Colchón de Seguridad</label>
+                <select id="pCol" onchange="calcular()">
+                    <option value="0.03">3%</option><option value="0.05" selected>5%</option><option value="0.07">7%</option><option value="0.10">10%</option>
+                </select>
             </div>
-            <hr>
-            <p>PORCENTAJE DE GANANCIA: <span id="resMargenPct" style="font-size: 1.5em; font-weight: bold;">0%</span></p>
-            <div id="puntuacionFinal" class="badge">Calificación: -</div>
+            <div class="input-group">
+                <label>% Ganancia Desarrollador (Sobre Directos)</label>
+                <select id="pDes" onchange="calcular()">
+                    <option value="0.09">9%</option><option value="0.10">10%</option><option value="0.11">11%</option><option value="0.12" selected>12%</option>
+                </select>
+            </div>
         </div>
     </div>
 
-    <div class="terreno-section">
-        <h2>Evaluación de Terreno</h2>
-        <div class="main-grid">
-            <div class="section">
-                <div class="input-group">
-                    <label>Precio Venta de este Terreno ($)</label>
-                    <input type="number" id="terrenoActual" oninput="calcular()">
-                </div>
-                <div class="input-group">
-                    <label>Precio Lote Similar en Zona ($)</label>
-                    <input type="number" id="terrenoReferencia" oninput="calcular()">
-                </div>
-                <div id="diffTerreno" style="background: #fff; padding: 10px; border-radius: 5px; font-weight: bold;">
-                    Diferencia: $0 (0%)
-                </div>
+    <h3>Análisis por Unidad</h3>
+    <div class="visor-unidad">
+        <div><label>Costo Unidad</label><span class="val-unidad" id="uCosto">$0</span></div>
+        <div><label>Venta Unidad</label><span class="val-unidad" id="uVenta">$0</span></div>
+        <div><label>Comisión (3%)</label><span class="val-unidad" id="uComision">$0</span></div>
+        <div><label>Ganancia Unidad</label><span class="val-unidad" id="uGanancia">$0</span></div>
+    </div>
+
+    <div class="visualizador-total">
+        <div class="grid-main" style="grid-template-columns: 1fr 1fr 1fr; border:none; margin-bottom:0;">
+            <div><p>COSTO PROYECTO</p><div class="res-big" id="tCosto">$0</div></div>
+            <div><p>PRECIO VENTA</p><div class="res-big" id="tVenta">$0</div></div>
+            <div><p>GANANCIA ANTES IMP.</p><div class="res-big" id="tGanancia">$0</div></div>
+        </div>
+        <p>MARGEN DE UTILIDAD: <span id="tMargen" style="font-size: 1.8em; font-weight: bold;">0%</span></p>
+        <div id="notaFinal" class="badge">Nota: -</div>
+    </div>
+
+    <div class="terreno-box">
+        <h3>Evaluación Técnica de Terreno</h3>
+        <div class="grid-main">
+            <div>
+                <label>Precio de Venta Terreno ($)</label>
+                <input type="number" id="terrVenta" oninput="calcular()">
+                <label>Precio Zona (Referencia) ($)</label>
+                <input type="number" id="terrRef" oninput="calcular()">
+                <p id="terrDiff" style="font-weight: bold; margin-top:10px; color: var(--primary);"></p>
             </div>
-            
-            <div class="section">
-                <div class="input-group">
-                    <label>Ubicación</label>
-                    <select id="ubicacion" onchange="calcular()">
-                        <option value="N">Norte (N)</option>
-                        <option value="C">Centro (C)</option>
-                        <option value="S">Sur (S)</option>
+            <div style="text-align: center;">
+                <label>Ubicación / Preparación</label>
+                <div class="grid-main" style="grid-template-columns: 1fr 1fr; gap:10px;">
+                    <select id="tUbi" onchange="calcular()">
+                        <option value="N">Norte (N)</option><option value="C">Centro (C)</option><option value="S">Sur (S)</option>
+                    </select>
+                    <select id="tPrep" onchange="calcular()">
+                        <option value="-">Requiere Preparación (-)</option><option value="+">No requiere (+)</option>
                     </select>
                 </div>
-                <div class="input-group">
-                    <label>¿Requiere Preparación Especial de Terreno?</label>
-                    <select id="preparacion" onchange="calcular()">
-                        <option value="-">Sí (Afecta negativo -)</option>
-                        <option value="+">No (Afecta positivo +)</option>
-                    </select>
-                </div>
-                <div style="text-align: center;">
-                    <label>CALIFICACIÓN FINAL TERRENO</label>
-                    <div id="notaLetras" style="font-size: 3em; color: var(--primary); font-weight: 900;">---</div>
-                </div>
+                <div id="califLetras" style="font-size: 3.5em; font-weight: 900; color: var(--primary); margin-top: 10px;">---</div>
             </div>
         </div>
     </div>
@@ -183,51 +146,54 @@
 
 <script>
 function calcular() {
-    // --- VARIABLES DE ENTRADA ---
-    const ventaTotal = parseFloat(document.getElementById('precioVentaTotal').value) || 0;
-    const numUnidades = parseFloat(document.getElementById('numUnidades').value) || 1;
-    const uvt = parseFloat(document.getElementById('valorUVT').value) || 0;
-    
-    // Costos Directos
-    const cTerreno = parseFloat(document.getElementById('costoTerreno').value) || 0;
-    const cCarreteras = parseFloat(document.getElementById('costoCarreteras').value) || 0;
-    const cConstruccion = parseFloat(document.getElementById('costoConstruccion').value) || 0;
-    const cOperativo = parseFloat(document.getElementById('costoOperativo').value) || 0;
-    const cNotarial = 262.5 * uvt;
-    const cEscrituracionTotal = (parseFloat(document.getElementById('escrituracionUnidad').value) || 0) / 2 * numUnidades;
+    // 1. Datos Directos
+    const cTerreno = parseFloat(document.getElementById('cTerreno').value) || 0;
+    const cCarreteras = parseFloat(document.getElementById('cCarreteras').value) || 0;
+    const cConst = parseFloat(document.getElementById('cConst').value) || 0;
+    const cOp = parseFloat(document.getElementById('cOp').value) || 0;
+    const uvt = parseFloat(document.getElementById('vUVT').value) || 0;
+    const cNotaria = 262.5 * uvt;
+    const nUni = parseFloat(document.getElementById('nUni').value) || 1;
+    const cEscritTotal = (parseFloat(document.getElementById('cEscUni').value) || 0) / 2 * nUni;
 
-    document.getElementById('costoNotarial').value = cNotarial.toLocaleString();
+    document.getElementById('valNotariaTxt').innerText = `$ ${cNotaria.toLocaleString()}`;
+    const totalDirectos = cTerreno + cCarreteras + cConst + cOp + cNotaria + cEscritTotal;
 
-    const totalDirectos = cTerreno + cCarreteras + cConstruccion + cOperativo + cNotarial + cEscrituracionTotal;
+    // 2. Datos Indirectos y Totales
+    const vTotal = parseFloat(document.getElementById('vTotal').value) || 0;
+    const pPub = parseFloat(document.getElementById('pPub').value);
+    const pCom = parseFloat(document.getElementById('pCom').value);
+    const pCol = parseFloat(document.getElementById('pCol').value);
+    const pDes = parseFloat(document.getElementById('pDes').value);
 
-    // --- CÁLCULOS INDIRECTOS (Recursivos básicos) ---
-    // Publicidad es 3% del costo proyecto. Para evitar bucle infinito, usamos una aproximación 
-    // del costo total basada en directos o calculamos sobre la marcha.
-    const comisionesVenta = ventaTotal * 0.03;
-    const colchon = ventaTotal * 0.05; // 5% como valor medio
-    const gananciaDesarrollador = totalDirectos * 0.105; // 10.5% como valor medio
-    
-    // Estimación de Publicidad (Costo Proyecto aprox = Directos * 1.2)
-    const publicidad = (totalDirectos * 1.2) * 0.03;
+    const comisiones = vTotal * pCom;
+    const colchon = vTotal * pCol;
+    const gananciaDes = totalDirectos * pDes;
+    // Publicidad calculada sobre el total estimado (Iterativo simple)
+    const publicidad = (totalDirectos + comisiones + colchon + gananciaDes) * pPub;
 
-    const costoProyecto = totalDirectos + publicidad + comisionesVenta + colchon + gananciaDesarrollador;
+    const costoProyecto = totalDirectos + publicidad + comisiones + colchon + gananciaDes;
+    const gananciaAbs = vTotal - costoProyecto;
+    const margenPct = (vTotal > 0) ? (gananciaAbs / vTotal) * 100 : 0;
 
-    // Llenar campos indirectos
-    document.getElementById('autoPublicidad').value = `$ ${publicidad.toLocaleString()}`;
-    document.getElementById('autoComisiones').value = `$ ${comisionesVenta.toLocaleString()}`;
-    document.getElementById('autoColchon').value = `$ ${colchon.toLocaleString()}`;
-    document.getElementById('autoGananciaDes').value = `$ ${gananciaDesarrollador.toLocaleString()}`;
+    // 3. Visualizador por Unidad
+    const uCostoVal = costoProyecto / nUni;
+    const uVentaVal = vTotal / nUni;
+    const uComisionVal = uVentaVal * 0.03; // 3% fijo según instrucción
+    const uGananciaVal = uVentaVal - uCostoVal;
 
-    // --- VISUALIZADOR ---
-    const gananciaAbs = ventaTotal - costoProyecto;
-    const margenPct = (ventaTotal > 0) ? (gananciaAbs / ventaTotal) * 100 : 0;
+    document.getElementById('uCosto').innerText = `$ ${Math.round(uCostoVal).toLocaleString()}`;
+    document.getElementById('uVenta').innerText = `$ ${Math.round(uVentaVal).toLocaleString()}`;
+    document.getElementById('uComision').innerText = `$ ${Math.round(uComisionVal).toLocaleString()}`;
+    document.getElementById('uGanancia').innerText = `$ ${Math.round(uGananciaVal).toLocaleString()}`;
 
-    document.getElementById('resCostoTotal').innerText = `$ ${Math.round(costoProyecto).toLocaleString()}`;
-    document.getElementById('resCostoUnidad').innerText = `$ ${Math.round(costoProyecto/numUnidades).toLocaleString()}`;
-    document.getElementById('resGananciaAbs').innerText = `$ ${Math.round(gananciaAbs).toLocaleString()}`;
-    document.getElementById('resMargenPct').innerText = `${margenPct.toFixed(2)}%`;
+    // 4. Visualizador Total
+    document.getElementById('tCosto').innerText = `$ ${Math.round(costoProyecto).toLocaleString()}`;
+    document.getElementById('tVenta').innerText = `$ ${Math.round(vTotal).toLocaleString()}`;
+    document.getElementById('tGanancia').innerText = `$ ${Math.round(gananciaAbs).toLocaleString()}`;
+    document.getElementById('tMargen').innerText = `${margenPct.toFixed(2)}%`;
 
-    // --- CALIFICACIÓN PROYECTO (1-10) ---
+    // Calificación Proyecto
     let nota = 1;
     if (margenPct >= 50) nota = 10;
     else if (margenPct >= 40) nota = 9;
@@ -238,35 +204,30 @@ function calcular() {
     else if (margenPct >= 15) nota = 4;
     else if (margenPct >= 10) nota = 3;
     else if (margenPct >= 5) nota = 2;
-    
-    const divNota = document.getElementById('puntuacionFinal');
-    divNota.innerText = `CALIFICACIÓN: ${nota} / 10`;
-    divNota.className = `badge ${nota >= 7 ? 'nota alta' : 'nota-baja'}`;
 
-    // --- EVALUACIÓN DE TERRENO ---
-    const tActual = parseFloat(document.getElementById('terrenoActual').value) || 0;
-    const tRef = parseFloat(document.getElementById('terrenoReferencia').value) || 0;
-    
+    const badge = document.getElementById('notaFinal');
+    badge.innerText = `Calificación Final: ${nota} / 10`;
+    badge.className = `badge ${nota >= 7 ? 'nota-ok' : 'nota-alert'}`;
+
+    // 5. Evaluación de Terreno
+    const tVenta = parseFloat(document.getElementById('terrVenta').value) || 0;
+    const tRef = parseFloat(document.getElementById('terrRef').value) || 0;
     if (tRef > 0) {
-        const dPesos = tRef - tActual;
-        const dPct = (dPesos / tRef) * 100;
-        document.getElementById('diffTerreno').innerText = `Diferencia: $${dPesos.toLocaleString()} (${dPct.toFixed(1)}%)`;
+        const dP = tRef - tVenta;
+        const dPct = (dP / tRef) * 100;
+        document.getElementById('terrDiff').innerText = `Ahorro vs Zona: $${dP.toLocaleString()} (${dPct.toFixed(1)}%)`;
     }
 
-    // Viabilidad Terreno
     let viabilidad = "B";
-    const pctTerreno = (cTerreno / costoProyecto) * 100;
-    
-    if (pctTerreno < 12) viabilidad = "AAA";
-    else if (pctTerreno >= 12 && pctTerreno < 15) viabilidad = "AA";
-    else if (pctTerreno === 15) viabilidad = "A";
-    else viabilidad = "B";
+    const pctTerrSobreCosto = (cTerreno / costoProyecto) * 100;
+    if (pctTerrSobreCosto < 12) viabilidad = "AAA";
+    else if (pctTerrSobreCosto < 15) viabilidad = "AA";
+    else if (pctTerrSobreCosto === 15) viabilidad = "A";
 
-    const notaFinalTerreno = document.getElementById('ubicacion').value + viabilidad + document.getElementById('preparacion').value;
-    document.getElementById('notaLetras').innerText = notaFinalTerreno;
+    document.getElementById('califLetras').innerText = document.getElementById('tUbi').value + viabilidad + document.getElementById('tPrep').value;
 }
 
-// Iniciar cálculo
+// Cálculo inicial
 calcular();
 </script>
 
