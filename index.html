@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Evaluador Inmobiliario - Versión Final</title>
+    <title>Evaluador Inmobiliario - Versión Final con Desglose</title>
     <style>
         :root {
             --primary: #1e3799;
@@ -19,10 +19,13 @@
         .grid-main { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; margin-bottom: 25px; }
         
         .card { background: var(--light); padding: 20px; border-radius: 10px; border: 1px solid #ced4da; }
-        .input-group { margin-bottom: 12px; }
+        .input-group { margin-bottom: 15px; }
         label { display: block; font-weight: bold; font-size: 0.85em; margin-bottom: 4px; color: #57606f; }
         input, select { width: 100%; padding: 10px; border: 1px solid #a4b0be; border-radius: 6px; box-sizing: border-box; font-size: 0.95em; }
         
+        /* Precios dinámicos en los dropdowns */
+        .val-preview { display: block; font-size: 0.8em; color: var(--secondary); font-weight: bold; margin-top: 3px; }
+
         /* Visualizadores */
         .visor-unidad { background: #ffffff; border: 2px solid var(--primary); padding: 15px; border-radius: 10px; margin-bottom: 20px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; text-align: center; }
         .visor-unidad div { border-right: 1px solid #eee; }
@@ -49,17 +52,16 @@
             <h3>Gastos Directos</h3>
             <div class="input-group"><label>Costo del Terreno ($)</label><input type="number" id="cTerreno" value="200000000" oninput="calcular()"></div>
             <div class="input-group"><label>Carreteras y Cesión ($)</label><input type="number" id="cCarreteras" value="80000000" oninput="calcular()"></div>
-            <div class="input-group"><label>Construcción y Amenidades ($)</label><input type="number" id="cConst" value="450000000" oninput="calcular()"></div>
-            <div class="input-group"><label>Costos Operativos ($)</label><input type="number" id="cOp" value="5000000" oninput="calcular()"></div>
+            <div class="input-group"><label>Construcción, Servicios y Amenidades ($)</label><input type="number" id="cConst" value="450000000" oninput="calcular()"></div>
+            <div class="input-group"><label>Costos Operativos (Nómina, oficina, atención) ($)</label><input type="number" id="cOp" value="5000000" oninput="calcular()"></div>
             <div class="input-group">
                 <label>Valor UVT (Manual)</label>
                 <input type="number" id="vUVT" value="52374" oninput="calcular()">
-                <small>Notaría: 262.5 UVT = <span id="valNotariaTxt">$0</span></small>
+                <small>Notaría (262.5 UVT): <span id="valNotariaTxt" style="font-weight:bold;">$0</span></small>
             </div>
             <div class="input-group">
                 <label>Escrituración por Unidad ($)</label>
                 <input type="number" id="cEscUni" value="2500000" oninput="calcular()">
-                <small>Dividido entre 2 y multiplicado por unidades.</small>
             </div>
         </div>
 
@@ -73,29 +75,37 @@
                 <label>Número de Unidades</label>
                 <input type="number" id="nUni" value="12" oninput="calcular()">
             </div>
+            
             <div class="input-group">
-                <label>% Publicidad (Sugerido 3%)</label>
+                <label>% Publicidad (Sobre Costo Proyecto)</label>
                 <select id="pPub" onchange="calcular()">
-                    <option value="0.01">1%</option><option value="0.02">2%</option><option value="0.03" selected>3%</option><option value="0.04">4%</option>
+                    <option value="0.01">1%</option><option value="0.02">2%</option><option value="0.03" selected>3%</option>
                 </select>
+                <span class="val-preview" id="pre-Pub">$ 0</span>
             </div>
+
             <div class="input-group">
-                <label>% Comisiones de Venta</label>
+                <label>% Comisiones de Venta (Sobre Venta)</label>
                 <select id="pCom" onchange="calcular()">
                     <option value="0.02">2%</option><option value="0.03" selected>3%</option><option value="0.04">4%</option><option value="0.05">5%</option>
                 </select>
+                <span class="val-preview" id="pre-Com">$ 0</span>
             </div>
+
             <div class="input-group">
-                <label>% Colchón de Seguridad</label>
+                <label>% Colchón de Seguridad (Sobre Venta)</label>
                 <select id="pCol" onchange="calcular()">
                     <option value="0.03">3%</option><option value="0.05" selected>5%</option><option value="0.07">7%</option><option value="0.10">10%</option>
                 </select>
+                <span class="val-preview" id="pre-Col">$ 0</span>
             </div>
+
             <div class="input-group">
                 <label>% Ganancia Desarrollador (Sobre Directos)</label>
                 <select id="pDes" onchange="calcular()">
                     <option value="0.09">9%</option><option value="0.10">10%</option><option value="0.11">11%</option><option value="0.12" selected>12%</option>
                 </select>
+                <span class="val-preview" id="pre-Des">$ 0</span>
             </div>
         </div>
     </div>
@@ -166,13 +176,21 @@ function calcular() {
     const pCol = parseFloat(document.getElementById('pCol').value);
     const pDes = parseFloat(document.getElementById('pDes').value);
 
-    const comisiones = vTotal * pCom;
-    const colchon = vTotal * pCol;
-    const gananciaDes = totalDirectos * pDes;
-    // Publicidad calculada sobre el total estimado (Iterativo simple)
-    const publicidad = (totalDirectos + comisiones + colchon + gananciaDes) * pPub;
+    // Cálculos de montos individuales
+    const montoComisiones = vTotal * pCom;
+    const montoColchon = vTotal * pCol;
+    const montoDesarrollador = totalDirectos * pDes;
+    
+    // Publicidad calculada sobre el total estimado para evitar circularidad
+    const montoPublicidad = (totalDirectos + montoComisiones + montoColchon + montoDesarrollador) * pPub;
 
-    const costoProyecto = totalDirectos + publicidad + comisiones + colchon + gananciaDes;
+    // Mostrar valores en las vistas previas de los dropdowns
+    document.getElementById('pre-Com').innerText = `$ ${Math.round(montoComisiones).toLocaleString()}`;
+    document.getElementById('pre-Col').innerText = `$ ${Math.round(montoColchon).toLocaleString()}`;
+    document.getElementById('pre-Des').innerText = `$ ${Math.round(montoDesarrollador).toLocaleString()}`;
+    document.getElementById('pre-Pub').innerText = `$ ${Math.round(montoPublicidad).toLocaleString()}`;
+
+    const costoProyecto = totalDirectos + montoPublicidad + montoComisiones + montoColchon + montoDesarrollador;
     const gananciaAbs = vTotal - costoProyecto;
     const margenPct = (vTotal > 0) ? (gananciaAbs / vTotal) * 100 : 0;
 
@@ -193,7 +211,7 @@ function calcular() {
     document.getElementById('tGanancia').innerText = `$ ${Math.round(gananciaAbs).toLocaleString()}`;
     document.getElementById('tMargen').innerText = `${margenPct.toFixed(2)}%`;
 
-    // Calificación Proyecto
+    // Calificación Proyecto (1-10)
     let nota = 1;
     if (margenPct >= 50) nota = 10;
     else if (margenPct >= 40) nota = 9;
@@ -210,11 +228,11 @@ function calcular() {
     badge.className = `badge ${nota >= 7 ? 'nota-ok' : 'nota-alert'}`;
 
     // 5. Evaluación de Terreno
-    const tVenta = parseFloat(document.getElementById('terrVenta').value) || 0;
-    const tRef = parseFloat(document.getElementById('terrRef').value) || 0;
-    if (tRef > 0) {
-        const dP = tRef - tVenta;
-        const dPct = (dP / tRef) * 100;
+    const tVentaInput = parseFloat(document.getElementById('terrVenta').value) || 0;
+    const tRefInput = parseFloat(document.getElementById('terrRef').value) || 0;
+    if (tRefInput > 0) {
+        const dP = tRefInput - tVentaInput;
+        const dPct = (dP / tRefInput) * 100;
         document.getElementById('terrDiff').innerText = `Ahorro vs Zona: $${dP.toLocaleString()} (${dPct.toFixed(1)}%)`;
     }
 
